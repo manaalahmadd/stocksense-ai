@@ -167,3 +167,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.post("/api/v1/stores/create")
+def create_store(name: str = "Demo Store", db: Session = Depends(get_db)):
+    store = Store(name=name)
+    db.add(store)
+    db.commit()
+    db.refresh(store)
+    return {"id": store.id, "name": store.name}
