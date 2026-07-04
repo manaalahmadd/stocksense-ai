@@ -160,3 +160,14 @@ async def upload_sales_csv(
 @app.get("/api/v1/me")
 async def get_me(user: User = Depends(current_active_user)):
     return {"email": user.email, "id": str(user.id)}
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://stocksense-ai-frontend-gamma.vercel.app",
+    ],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
