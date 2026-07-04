@@ -47,7 +47,7 @@ export default function Dashboard() {
       return;
     }
 
-    fetch("http://localhost:8000/api/v1/dashboard/1")
+    fetch("https://stocksense-ai-6enu.onrender.com/api/v1/dashboard/1")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch dashboard data");
         return res.json();
@@ -71,7 +71,7 @@ export default function Dashboard() {
     setSending(true);
 
     try {
-      const res = await fetch("http://localhost:8000/api/v1/agent/1", {
+      const res = await fetch("https://stocksense-ai-6enu.onrender.com/api/v1/agent/1", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: userMessage.text }),

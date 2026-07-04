@@ -19,7 +19,7 @@ export default function LoginPage() {
     formData.append("password", password);
 
     try {
-      const res = await fetch("http://localhost:8000/auth/jwt/login", {
+      const res = await fetch("https://stocksense-ai-6enu.onrender.com/auth/jwt/login", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData.toString(),
