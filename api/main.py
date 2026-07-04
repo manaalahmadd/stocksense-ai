@@ -118,7 +118,10 @@ async def upload_sales_csv(
 
     store = db.query(Store).filter(Store.id == store_id).first()
     if not store:
-        raise HTTPException(status_code=404, detail="Store not found")
+        store = Store(name="Demo Store")
+        db.add(store)
+        db.commit()
+        db.refresh(store)
 
     inserted_sales = 0
     for _, row in df.iterrows():
