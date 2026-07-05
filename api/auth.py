@@ -1,3 +1,4 @@
+import os
 import uuid
 from typing import Optional
 from fastapi import Depends, Request
@@ -5,12 +6,21 @@ from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin, schemas
 from fastapi_users.authentication import AuthenticationBackend, BearerTransport, JWTStrategy
 from fastapi_users.db import SQLAlchemyUserDatabase
 from sqlalchemy import Column, String, Boolean
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.dialects.sqlite import BLOB
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
-from pydantic import EmailStr
 
-DATABASE_URL = "sqlite+aiosqlite:///./stocksense_auth.db"
+# Build the async DATABASE_URL
+_db_url = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./stocksense_auth.db")
+if _db_url.startswith("postgres://"):
+    _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+if _db_url.startswith("postgresql://"):
+    DATABASE_URL = _db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+else:
+    DATABASE_URL = _db_url
+
+IS_POSTGRES = DATABASE_URL.startswith("postgresql")
 
 
 class Base(DeclarativeBase):
@@ -19,7 +29,10 @@ class Base(DeclarativeBase):
 
 class User(Base):
     __tablename__ = "user"
-    id = Column(BLOB, primary_key=True, default=lambda: uuid.uuid4().bytes)
+    if IS_POSTGRES:
+        id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    else:
+        id = Column(BLOB, primary_key=True, default=lambda: uuid.uuid4().bytes)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
@@ -45,7 +58,7 @@ async def get_user_db(session: AsyncSession = Depends(get_async_session)):
     yield SQLAlchemyUserDatabase(session, User)
 
 
-SECRET = "CHANGE-THIS-SECRET-IN-PRODUCTION"
+SECRET = os.getenv("SECRET_KEY", "CHANGE-THIS-SECRET-IN-PRODUCTION")
 
 
 class UserRead(schemas.BaseUser[uuid.UUID]):
