@@ -53,6 +53,7 @@ export default function Dashboard() {
         return res.json();
       })
       .then((json) => {
+        console.log("Dashboard data:", JSON.stringify(json));
         setData(json);
         setLoading(false);
       })
@@ -115,7 +116,12 @@ export default function Dashboard() {
         <p className="text-gray-500 mb-8">Inventory overview — Demo Mart</p>
 
         <div className="space-y-4 mb-10">
-          {data?.products.map((product) => (
+          {!data?.products?.length && (
+            <div className="bg-white border rounded-lg p-5 text-gray-500 text-sm">
+              No products yet. Upload a CSV to get started.
+            </div>
+          )}
+          {data?.products?.map((product) => (
             <div
               key={product.product_id}
               className="bg-white border rounded-lg p-5 shadow-sm"
