@@ -1,4 +1,3 @@
-from billing import router as billing_router
 import contextlib
 import io
 import pandas as pd
@@ -11,6 +10,7 @@ from models import init_db, get_db, Store, Product, Sale
 from forecasting import forecast_demand
 from reorder import calculate_reorder
 from agent import ask_agent
+from billing import router as billing_router
 from auth import (
     fastapi_users, auth_backend, create_db_and_tables,
     current_active_user, User, UserRead, UserCreate, UserUpdate
@@ -22,13 +22,13 @@ async def lifespan(app: FastAPI):
     await create_db_and_tables()
     init_db()
     yield
-app.include_router(billing_router)
+
 
 app = FastAPI(title="StockSense AI", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -49,6 +49,7 @@ app.include_router(
     prefix="/users",
     tags=["users"],
 )
+app.include_router(billing_router)
 
 
 @app.get("/")
@@ -165,12 +166,7 @@ async def upload_sales_csv(
 async def get_me(user: User = Depends(current_active_user)):
     return {"email": user.email, "id": str(user.id)}
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
 @app.post("/api/v1/stores/create")
 def create_store(name: str = "Demo Store", db: Session = Depends(get_db)):
     store = Store(name=name)
