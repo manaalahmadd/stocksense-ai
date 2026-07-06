@@ -1,3 +1,4 @@
+from shopify_integration import router as shopify_router
 import contextlib
 import io
 import pandas as pd
@@ -50,6 +51,7 @@ app.include_router(
     tags=["users"],
 )
 app.include_router(billing_router)
+app.include_router(shopify_router)
 
 
 @app.get("/")

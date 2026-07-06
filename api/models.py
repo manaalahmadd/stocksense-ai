@@ -17,6 +17,8 @@ class Store(Base):
     __tablename__ = "stores"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
+    shopify_domain = Column(String, nullable=True)
+    shopify_token = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     products = relationship("Product", back_populates="store")
