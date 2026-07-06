@@ -1,3 +1,4 @@
+from billing import router as billing_router
 import contextlib
 import io
 import pandas as pd
@@ -21,7 +22,7 @@ async def lifespan(app: FastAPI):
     await create_db_and_tables()
     init_db()
     yield
-
+app.include_router(billing_router)
 
 app = FastAPI(title="StockSense AI", lifespan=lifespan)
 

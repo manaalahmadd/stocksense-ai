@@ -45,7 +45,14 @@ class Sale(Base):
 
     product = relationship("Product", back_populates="sales")
 
-
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+    id = Column(Integer, primary_key=True, index=True)
+    user_email = Column(String, nullable=False, unique=True)
+    plan = Column(String, default="free")  # free, starter, growth
+    status = Column(String, default="active")  # active, cancelled
+    razorpay_payment_id = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 def init_db():
     Base.metadata.create_all(bind=engine)
 
