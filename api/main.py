@@ -191,3 +191,13 @@ def run_migration(db: Session = Depends(get_db)):
         return {"status": "migration complete"}
     except Exception as e:
         return {"status": "error", "detail": str(e)}
+
+@app.post("/api/v1/shopify/sync/{store_id}")
+async def sync_shopify(store_id: int, db: Session = Depends(get_db)):
+    store = db.query(Store).filter(Store.id == store_id).first()
+    if not store or not store.shopify_token:
+        raise HTTPException(status_code=404, detail="Store not found or not connected")
+    
+    from shopify_integration import sync_shopify_orders
+    await sync_shopify_orders(store.shopify_domain, store.shopify_token, store.id, db)
+    return {"status": "sync complete"}
