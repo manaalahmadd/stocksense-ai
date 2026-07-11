@@ -176,3 +176,18 @@ def create_store(name: str = "Demo Store", db: Session = Depends(get_db)):
     db.commit()
     db.refresh(store)
     return {"id": store.id, "name": store.name}
+
+@app.post("/api/v1/admin/migrate")
+def run_migration(db: Session = Depends(get_db)):
+    """Add missing columns to existing tables."""
+    try:
+        db.execute(__import__('sqlalchemy').text(
+            "ALTER TABLE stores ADD COLUMN IF NOT EXISTS shopify_domain VARCHAR;"
+        ))
+        db.execute(__import__('sqlalchemy').text(
+            "ALTER TABLE stores ADD COLUMN IF NOT EXISTS shopify_token VARCHAR;"
+        ))
+        db.commit()
+        return {"status": "migration complete"}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
