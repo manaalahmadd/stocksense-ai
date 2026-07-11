@@ -33,6 +33,7 @@ export default function LoginPage() {
 
       const data = await res.json();
       localStorage.setItem("token", data.access_token);
+      localStorage.setItem("userEmail", email);
       router.push("/");
     } catch {
       setError("Could not reach the server.");
