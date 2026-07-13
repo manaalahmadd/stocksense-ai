@@ -215,3 +215,12 @@ async def debug_shopify(store_id: int, db: Session = Depends(get_db)):
             headers={"X-Shopify-Access-Token": store.shopify_token},
         )
         return {"status": res.status_code, "orders": res.json()}
+    
+@app.delete("/api/v1/stores/{store_id}")
+def delete_store(store_id: int, db: Session = Depends(get_db)):
+    store = db.query(Store).filter(Store.id == store_id).first()
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
+    db.delete(store)
+    db.commit()
+    return {"status": "deleted"}
