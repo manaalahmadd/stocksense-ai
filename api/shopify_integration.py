@@ -51,13 +51,16 @@ async def shopify_callback(code: str, shop: str, db: Session = Depends(get_db)):
     if not access_token:
         raise HTTPException(status_code=400, detail="Failed to get access token")
 
-    # Get or create store
+    # Get or create store, always update token
     store = db.query(Store).filter(Store.name == shop).first()
     if not store:
         store = Store(name=shop, shopify_domain=shop, shopify_token=access_token)
         db.add(store)
-        db.commit()
-        db.refresh(store)
+    else:
+        store.shopify_token = access_token
+        store.shopify_domain = shop
+    db.commit()
+    db.refresh(store)
 
     # Sync last 90 days of orders
     await sync_shopify_orders(shop, access_token, store.id, db)
