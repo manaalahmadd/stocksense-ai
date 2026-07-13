@@ -201,3 +201,17 @@ async def sync_shopify(store_id: int, db: Session = Depends(get_db)):
     from shopify_integration import sync_shopify_orders
     await sync_shopify_orders(store.shopify_domain, store.shopify_token, store.id, db)
     return {"status": "sync complete"}
+
+@app.get("/api/v1/shopify/debug/{store_id}")
+async def debug_shopify(store_id: int, db: Session = Depends(get_db)):
+    import httpx
+    store = db.query(Store).filter(Store.id == store_id).first()
+    if not store or not store.shopify_token:
+        return {"error": "store not found or no token"}
+    
+    async with httpx.AsyncClient() as client:
+        res = await client.get(
+            f"https://{store.shopify_domain}/admin/api/2024-01/orders.json?status=any&limit=10",
+            headers={"X-Shopify-Access-Token": store.shopify_token},
+        )
+        return {"status": res.status_code, "orders": res.json()}
