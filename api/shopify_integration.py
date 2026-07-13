@@ -74,7 +74,7 @@ async def sync_shopify_orders(shop: str, token: str, store_id: int, db: Session)
     async with httpx.AsyncClient() as client:
         res = await client.get(
             f"https://{shop}/admin/api/2024-01/orders.json"
-            f"?status=any&limit=250&created_at_min=2026-04-01",
+            f"?status=any&limit=250",
             headers=headers,
         )
         orders = res.json().get("orders", [])
