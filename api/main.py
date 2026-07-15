@@ -224,3 +224,39 @@ def delete_store(store_id: int, db: Session = Depends(get_db)):
     db.delete(store)
     db.commit()
     return {"status": "deleted"}
+
+class UpdateTokenRequest(BaseModel):
+    token: str
+
+@app.post("/api/v1/stores/{store_id}/token")
+def update_store_token(store_id: int, request: UpdateTokenRequest, db: Session = Depends(get_db)):
+    store = db.query(Store).filter(Store.id == store_id).first()
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
+    store.shopify_token = request.token
+    db.commit()
+    return {"status": "token updated"}
+
+@app.post("/api/v1/shopify/sync/{store_id}")
+async def sync_shopify(store_id: int, db: Session = Depends(get_db)):
+    store = db.query(Store).filter(Store.id == store_id).first()
+    if not store or not store.shopify_token:
+        raise HTTPException(status_code=404, detail="Store not found or not connected")
+    
+    from shopify_integration import sync_shopify_orders
+    await sync_shopify_orders(store.shopify_domain, store.shopify_token, store.id, db)
+    return {"status": "sync complete"}
+
+@app.get("/api/v1/shopify/products/{store_id}")
+async def debug_shopify_products(store_id: int, db: Session = Depends(get_db)):
+    import httpx
+    store = db.query(Store).filter(Store.id == store_id).first()
+    if not store or not store.shopify_token:
+        return {"error": "store not found or no token"}
+    
+    async with httpx.AsyncClient() as client:
+        res = await client.get(
+            f"https://{store.shopify_domain}/admin/api/2024-01/products.json?limit=10",
+            headers={"X-Shopify-Access-Token": store.shopify_token},
+        )
+        return {"status": res.status_code, "data": res.json()}
