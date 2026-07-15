@@ -13,7 +13,7 @@ router = APIRouter()
 SHOPIFY_CLIENT_ID = os.getenv("SHOPIFY_CLIENT_ID", "")
 SHOPIFY_CLIENT_SECRET = os.getenv("SHOPIFY_CLIENT_SECRET", "")
 APP_URL = "https://stocksense-ai-6enu.onrender.com"
-SCOPES = "read_orders,read_products,read_inventory"
+SCOPES = "read_orders,read_products,read_inventory,read_fulfillments"
 
 
 @router.get("/api/v1/shopify/install")
