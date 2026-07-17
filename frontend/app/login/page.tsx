@@ -34,7 +34,7 @@ export default function LoginPage() {
       const data = await res.json();
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("userEmail", email);
-      router.push("/");
+      router.push("/dashboard");
     } catch {
       setError("Could not reach the server.");
       setLoading(false);

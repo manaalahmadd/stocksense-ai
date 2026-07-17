@@ -1,211 +1,130 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-type ReorderInfo = {
-  product_id: number;
-  product_name: string;
-  current_stock: number;
-  avg_daily_demand: number;
-  supplier_lead_time_days: number;
-  days_until_stockout: number | null;
-  needs_reorder: boolean;
-  urgency: "critical" | "warning" | "ok";
-  suggested_order_qty: number;
-  reasoning: string;
-};
-
-type DashboardResponse = {
-  store_id: number;
-  products: ReorderInfo[];
-};
-
-type ChatMessage = {
-  role: "user" | "agent";
-  text: string;
-};
-
-const urgencyStyles: Record<string, string> = {
-  critical: "bg-red-100 text-red-800 border-red-300",
-  warning: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  ok: "bg-green-100 text-green-800 border-green-300",
-};
-
-const SHOPIFY_INSTALL_URL = "https://stocksense-ai-6enu.onrender.com/api/v1/shopify/install?shop=stocksense-test-yaeryvw1.myshopify.com";
-
-export default function Dashboard() {
-  const [data, setData] = useState<DashboardResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [sending, setSending] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      window.location.href = "/login";
-      return;
-    }
-
-    fetch("https://stocksense-ai-6enu.onrender.com/api/v1/dashboard/1")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch dashboard data");
-        return res.json();
-      })
-      .then((json) => {
-        setData(json);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
-
-  async function sendMessage() {
-    if (!input.trim() || sending) return;
-    const userMessage: ChatMessage = { role: "user", text: input };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setSending(true);
-    try {
-      const res = await fetch("https://stocksense-ai-6enu.onrender.com/api/v1/agent/1", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: userMessage.text }),
-      });
-      const json = await res.json();
-      setMessages((prev) => [...prev, { role: "agent", text: json.answer }]);
-    } catch {
-      setMessages((prev) => [...prev, { role: "agent", text: "Error: could not reach the agent." }]);
-    } finally {
-      setSending(false);
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-500">Loading dashboard...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-red-500">Error: {error}. Is your backend running?</p>
-      </div>
-    );
-  }
-
+export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">StockSense AI</h1>
-        <div className="flex items-center justify-between mb-8">
-          <p className="text-gray-500">Inventory overview — Demo Mart</p>
-          <div className="flex items-center gap-4">
-            <a href="/pricing" className="text-sm text-blue-600 hover:underline font-medium">
-              Upgrade plan
-            </a>
-            <button
-              onClick={() => {
-                localStorage.removeItem("token");
-                window.location.href = "/login";
-              }}
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Sign out
-            </button>
+    <main className="min-h-screen bg-white">
+      {/* Nav */}
+      <nav className="flex items-center justify-between px-8 py-4 border-b">
+        <span className="text-xl font-bold text-gray-900">StockSense AI</span>
+        <div className="flex items-center gap-4">
+          <a href="/pricing" className="text-sm text-gray-600 hover:text-gray-900">Pricing</a>
+          <a href="/login" className="text-sm text-gray-600 hover:text-gray-900">Sign in</a>
+          <a href="/register" className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-700">
+            Get started free
+          </a>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="max-w-4xl mx-auto px-8 py-24 text-center">
+        <div className="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full mb-6">
+          AI-Powered Inventory Intelligence
+        </div>
+        <h1 className="text-5xl font-bold text-gray-900 leading-tight mb-6">
+          Stop stockouts.<br />Stop dead stock.
+        </h1>
+        <p className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto">
+          StockSense AI tells store owners exactly what to reorder and when — using machine learning trained on your sales data.
+        </p>
+        <div className="flex items-center justify-center gap-4">
+          <a href="/register" className="bg-blue-600 text-white font-medium px-8 py-3 rounded-lg hover:bg-blue-700 text-lg">
+            Start free trial
+          </a>
+          <a href="/pricing" className="text-gray-600 font-medium px-8 py-3 rounded-lg border hover:bg-gray-50 text-lg">
+            See pricing
+          </a>
+        </div>
+        <p className="text-sm text-gray-400 mt-4">No credit card required · 14-day free trial</p>
+      </section>
+
+      {/* Features */}
+      <section className="bg-gray-50 py-20">
+        <div className="max-w-5xl mx-auto px-8">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            Everything you need to optimize inventory
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: "📈",
+                title: "Demand Forecasting",
+                desc: "Prophet ML model predicts your daily demand for the next 30 days, accounting for weekly patterns and seasonality.",
+              },
+              {
+                icon: "🤖",
+                title: "AI Reorder Alerts",
+                desc: "Get plain-English recommendations: 'You'll run out of Item X in 4 days. Order 120 units now.'",
+              },
+              {
+                icon: "🛍️",
+                title: "Shopify Integration",
+                desc: "Connect your Shopify store in one click. Sales data syncs automatically — no CSV uploads needed.",
+              },
+              {
+                icon: "⚡",
+                title: "Real-time Dashboard",
+                desc: "See all your SKUs, current stock levels, and urgency status at a glance. Critical items highlighted instantly.",
+              },
+              {
+                icon: "💬",
+                title: "Chat with AI Agent",
+                desc: "Ask questions like 'What should I stock up on before Diwali?' and get data-backed answers.",
+              },
+              {
+                icon: "📊",
+                title: "Multi-product Support",
+                desc: "Track hundreds of SKUs simultaneously. Each product gets its own forecast and reorder calculation.",
+              },
+            ].map((feature) => (
+              <div key={feature.title} className="bg-white rounded-xl p-6 shadow-sm border">
+                <div className="text-3xl mb-4">{feature.icon}</div>
+                <h3 className="font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                <p className="text-gray-500 text-sm">{feature.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
+      </section>
 
-        <div className="space-y-4 mb-10">
-          {!data?.products?.length && (
-            <div className="bg-white border rounded-lg p-5 text-gray-500 text-sm">
-              No products yet. Upload a CSV to get started.
-            </div>
-          )}
-          {data?.products?.map((product) => (
-            <div key={product.product_id} className="bg-white border rounded-lg p-5 shadow-sm">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">{product.product_name}</h2>
-                  <p className="text-sm text-gray-500">
-                    Current stock: {product.current_stock} units · Avg demand: {product.avg_daily_demand}/day
-                  </p>
-                </div>
-                <span className={`text-xs font-medium px-3 py-1 rounded-full border ${urgencyStyles[product.urgency]}`}>
-                  {product.urgency.toUpperCase()}
-                </span>
-              </div>
-              <p className="text-gray-700 mt-3 text-sm">{product.reasoning}</p>
-              {product.needs_reorder && (
-                <div className="mt-3 bg-blue-50 border border-blue-200 rounded-md px-4 py-2 text-sm text-blue-800">
-                  Suggested order quantity: <strong>{product.suggested_order_qty} units</strong>
-                </div>
-              )}
+      {/* Social proof */}
+      <section className="py-20 max-w-4xl mx-auto px-8 text-center">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          Built for Indian retail store owners
+        </h2>
+        <p className="text-gray-500 text-lg mb-12">
+          Whether you run a Shopify store or a local shop — StockSense AI works with your data.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            { stat: "30 days", label: "Demand forecast horizon" },
+            { stat: "< 1 min", label: "Time to connect Shopify" },
+            { stat: "₹0", label: "To get started" },
+          ].map((item) => (
+            <div key={item.label} className="text-center">
+              <div className="text-4xl font-bold text-blue-600 mb-2">{item.stat}</div>
+              <div className="text-gray-500 text-sm">{item.label}</div>
             </div>
           ))}
         </div>
+      </section>
 
-        <div className="bg-white border rounded-lg p-5 shadow-sm mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold text-gray-900">Connect your Shopify store</h2>
-              <p className="text-sm text-gray-500 mt-1">
-                Automatically sync your sales data from Shopify in real time.
-              </p>
-            </div>
-            <a href={SHOPIFY_INSTALL_URL} className="bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-green-700">
-              Connect Shopify
-            </a>
-          </div>
-        </div>
+      {/* CTA */}
+      <section className="bg-blue-600 py-20 text-center">
+        <h2 className="text-3xl font-bold text-white mb-4">
+          Ready to stop guessing your inventory?
+        </h2>
+        <p className="text-blue-100 mb-8 text-lg">
+          Join store owners using AI to make smarter reorder decisions.
+        </p>
+        <a href="/register" className="bg-white text-blue-600 font-semibold px-8 py-3 rounded-lg hover:bg-blue-50 text-lg">
+          Start your free trial
+        </a>
+      </section>
 
-        <div className="bg-white border rounded-lg shadow-sm">
-          <div className="px-5 py-4 border-b">
-            <h2 className="font-semibold text-gray-900">Ask your inventory agent</h2>
-            <p className="text-xs text-gray-500">e.g. &quot;What should I reorder this week?&quot;</p>
-          </div>
-          <div className="p-5 space-y-3 max-h-80 overflow-y-auto">
-            {messages.length === 0 && (
-              <p className="text-sm text-gray-400">No messages yet — ask a question below.</p>
-            )}
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[80%] rounded-lg px-4 py-2 text-sm ${msg.role === "user" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-800"}`}>
-                  {msg.text}
-                </div>
-              </div>
-            ))}
-            {sending && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 text-gray-500 text-sm rounded-lg px-4 py-2">Thinking...</div>
-              </div>
-            )}
-          </div>
-          <div className="p-4 border-t flex gap-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              placeholder="Ask about your inventory..."
-              className="flex-1 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              onClick={sendMessage}
-              disabled={sending}
-              className="bg-blue-600 text-white text-sm px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              Send
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Footer */}
+      <footer className="py-8 text-center text-gray-400 text-sm border-t">
+        © 2026 StockSense AI · Built for Indian retailers
+      </footer>
     </main>
   );
 }
