@@ -174,7 +174,7 @@ Full interactive docs: [stocksense-ai-6enu.onrender.com/docs](https://stocksense
 
 ## Built By
 
-**Manaal Ahmad** — 2nd year B.Tech CS student at ADGITM, Delhi (IP University)
+**Manaal Ahmad** — 3rd year B.Tech CS student at ADGITM, Delhi (IP University)
 
 Built this as a side project while preparing for CAT and solving LeetCode.
 
